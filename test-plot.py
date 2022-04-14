@@ -1,5 +1,5 @@
 """
-A simple test program to verify matplot is correctly installed.
+A simple test program to verify matplotlib and numpy is correctly installed.
 """
 
 __author__ = "Daniel Chapin"

@@ -9,6 +9,7 @@ __author__: "Chris Biancone, Daniel Chapin, Carissa Hartley, Isaac Kim, Neil Wil
 
 import numpy as np
 from matplotlib import pyplot as plt
+from datparser import parse_dat
 
 
 xvals = np.linspace(-1, 1, 11)
@@ -83,6 +84,7 @@ def main():
     correlation = covMatrix[1, 1] / covMatrix[0, 0] * covMatrix[1, 1]  # cov(c0, c1) / sig_c1 * sig_c0
     # seems independent of function choice
 
+    print("Generated data =================================")
     print("1st degree coefficient:\n\tmean:", c1mean, "\n\tstd dev:", c1std, "\n\tvariance:", c1var)
     print("0th degree coefficient:\n\tmean:", c0mean, "\n\tstd dev:", c0std, "\n\tvariance:", c0var)
     print("covariance matrix:\n", covMatrix)
@@ -138,6 +140,44 @@ def main():
     # Var(aX + b) = a^2  - this right??
     varfhat = c1mean ** 2
     print("Variance of estimated function:", varfhat)
+
+    # ==================================================================================================================
+    # using data provided
+
+    print("Given Data =========================")
+    xreal, yreal = parse_dat('classA0.dat')  # parse data
+    dat_out = [np.polyfit(xreal, yreal, 1)]
+    dat_out = np.array(dat_out)
+    print(dat_out)
+    c1 = dat_out[:, 0]
+    c1mean = np.mean(dat_out[:, 0])
+    c1std = np.std(dat_out[:, 0])
+    c1var = np.var(dat_out[:, 0])
+    c0 = dat_out[:, 1]
+    c0mean = np.mean(dat_out[:, 1])
+    c0std = np.std(dat_out[:, 1])
+    c0var = np.var(dat_out[:, 1])
+    # covMatrix = np.cov(dat_out[:, 0], dat_out[:, 1])  # [[sig_c1, cov],[cov, sig_c0]]
+    # correlation = covMatrix[1, 1] / covMatrix[0, 0] * covMatrix[1, 1]  # cov(c0, c1) / sig_c1 * sig_c0
+
+    print("1st degree coefficient:\n\tmean:", c1mean, "\n\tstd dev:", c1std, "\n\tvariance:", c1var)
+    print("0th degree coefficient:\n\tmean:", c0mean, "\n\tstd dev:", c0std, "\n\tvariance:", c0var)
+    print("correlation coefficient (from before):", correlation)
+    varfhatreal = c1mean ** 2
+    print("Variance of estimated function:", varfhatreal)
+
+    # 90% confidence interval: f_hat +/- z_.05sqrt(Var(f_hat)), Var(f_hat) = c_1^2
+    freal = c1mean * np.array(xreal) + c0mean  # needed to convert to numpy array from python list
+    confidence = 1.645*np.sqrt(c1mean**2)
+    plt.figure(5)
+    plt.title('Given data and regression with 90% CI')
+    plt.plot(xreal, freal, 'r', label='Linear Regression')
+    plt.fill_between(xreal, freal + confidence, freal - confidence)
+    plt.scatter(xreal, yreal, label='Given Data')
+    plt.show()
+
+
+
 
 
 # Press the green button in the gutter to run the script.

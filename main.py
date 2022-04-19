@@ -9,7 +9,6 @@ __author__: "Chris Biancone, Daniel Chapin, Carissa Hartley, Isaac Kim, Neil Wil
 
 import numpy as np
 from matplotlib import pyplot as plt
-import scipy
 
 
 xvals = np.linspace(-1, 1, 11)
@@ -64,11 +63,11 @@ def ecdf(a):
 
 
 def main():
-    # perform linear regression (degree = 1)
-    np.polyfit(xvals, make_fake_data(fn2), 1)
-    # alpha = np.dot((np.dot(np.linalg.inv(np.dot(A.T, A)), A.T)), y)  # manual pseudo-inverse for comparison
     dat_out = []  # array for coefficients of each data set
+    origfcn = make_fake_data(fn2)
     for i in np.arange(N):  # iterate over 1000 data sets
+        # perform regression using Ordinary Least Squares algorithm
+        # degree = 1 for linear regression
         dat_out.append(np.polyfit(xvals, make_fake_data(fn2), 1))
     dat_out = np.array(dat_out)
     # print(dat_out)
@@ -80,11 +79,14 @@ def main():
     c0mean = np.mean(dat_out[:, 1])
     c0std = np.std(dat_out[:, 1])
     c0var = np.var(dat_out[:, 1])
-    covMatrix = np.cov(dat_out[:, 0], dat_out[:, 1])
+    covMatrix = np.cov(dat_out[:, 0], dat_out[:, 1])  # [[sig_c1, cov],[cov, sig_c0]]
+    correlation = covMatrix[1, 1] / covMatrix[0, 0] * covMatrix[1, 1]  # cov(c0, c1) / sig_c1 * sig_c0
+    # seems independent of function choice
 
     print("1st degree coefficient:\n\tmean:", c1mean, "\n\tstd dev:", c1std, "\n\tvariance:", c1var)
     print("0th degree coefficient:\n\tmean:", c0mean, "\n\tstd dev:", c0std, "\n\tvariance:", c0var)
     print("covariance matrix:\n", covMatrix)
+    print("correlation coefficient:", correlation)
 
     # plot coefficient spread
     plt.figure(1)
@@ -124,14 +126,18 @@ def main():
     plt.show()
 
     # plot original data and estimated curve
-    y = fn2(xvals)
     plt.figure(4)
     regression = c1mean * xvals + c0mean
-    plt.plot(xvals, y, 'b', label='Original Function')
+    plt.scatter(xvals, origfcn, label='Original Function')
     plt.plot(xvals, regression, 'r', label='Linear Regression')
     plt.title("Function and Estimate")
     plt.legend()
     plt.show()
+
+    # variance of f_hat:
+    # Var(aX + b) = a^2  - this right??
+    varfhat = c1mean ** 2
+    print("Variance of estimated function:", varfhat)
 
 
 # Press the green button in the gutter to run the script.

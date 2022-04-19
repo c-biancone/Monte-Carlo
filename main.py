@@ -9,6 +9,7 @@ __author__: "Chris Biancone, Daniel Chapin, Carissa Hartley, Isaac Kim, Neil Wil
 
 import numpy as np
 from matplotlib import pyplot as plt
+import scipy
 
 
 xvals = np.linspace(-1, 1, 11)
@@ -37,7 +38,7 @@ def make_fake_data(fn):
     return fn(xvals) + np.random.normal(size=len(xvals))
 
 
-def my_gauss(x, mu, sigma):
+def gaussian(x, mu, sigma):
     """
     Calculates estimated PDF supposing a normal distribution
     :param x:
@@ -45,7 +46,21 @@ def my_gauss(x, mu, sigma):
     :param sigma: standard deviation
     :return: PDF
     """
-    return np.exp(-np.power(x-mu, 2) / (2.*sigma**2)) / np.sqrt(2*np.pi)
+    return np.exp(-np.power(x-mu, 2) / (2*sigma**2)) / np.sqrt(2*np.pi)
+
+
+def ecdf(a):
+    """
+    Calculates empirical CDF for an arbitrary array of data. Essentially a fancy sum.
+    :param a: input array
+    :return: CDF with points in sorted order
+    """
+    x, counts = np.unique(a, return_counts=True)
+    cusum = np.cumsum(counts)
+    x = np.insert(x, 0, x[0])
+    y = cusum / cusum[-1]
+    y = np.insert(y, 0, 0.)
+    return x, y
 
 
 def main():
@@ -71,40 +86,41 @@ def main():
     print("0th degree coefficient:\n\tmean:", c0mean, "\n\tstd dev:", c0std, "\n\tvariance:", c0var)
     print("covariance matrix:\n", covMatrix)
 
-    # get stuff ready for cdf
-    c1sort = np.sort(c1)
-    c0sort = np.sort(c0)
-    cdf1 = np.arange(N) / float(N)
-    cdf0 = np.arange(N) / float(N)
-
     # plot coefficient spread
     plt.figure(1)
-    plt.title("Coefficient Spread")
+    plt.title("Coefficient Spread, N = "+str(N))
     plt.xlabel(r'$\hat{c}_1$')
     plt.ylabel(r'$\hat{c}_0$')
     plt.scatter(dat_out[:, 0], dat_out[:, 1])
     plt.show()
 
-    # plot cdfs (for reference)
+    # estimated distribution and empirical CDF
+    c1pdf = gaussian(c1, c1mean, c1std)
+    c1x, c1cdf = ecdf(c1)
     plt.figure(2)
-    plt.title(r'$\hat{c}_1$ CDF')
-    plt.xlabel(r'$\hat{c}_1$')
-    plt.ylabel('P')
-    plt.plot(c1sort, cdf1)
-    plt.figure(3)
-    plt.title(r'$\hat{c}_0$ CDF')
-    plt.xlabel(r'$\hat{c}_0$')
-    plt.ylabel('P')
-    plt.plot(c0sort, cdf0)
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    ax1.scatter(c1, c1pdf, s=2)
+    ax2.plot(c1x, c1cdf, 'r')
+    ax1.set_xlabel(r'$\hat{c}_1$')
+    ax1.set_ylabel("PDF", color='b')
+    ax2.set_ylabel("CDF", color='r')
+    # plt.savefig("c1.png")
+    plt.title(r'Estimated Distribution of $\hat{c}_1$')
     plt.show()
 
-    # estimated distribution - unsure about this yet
-    c1PDF = my_gauss(xvals, c1mean, c1std)
-    plt.figure(4)
-    plt.plot(xvals, c1PDF)
-    # plt.savefig("my_fig.png")
-    plt.title("Estimated Distribution of Data")
-    plt.ylabel(r'${\cal L}_m^\gamma$')
+    c0pdf = gaussian(c0, c0mean, c0std)
+    c0x, c0cdf = ecdf(c0)
+    plt.figure(3)
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    ax1.scatter(c0, c0pdf, s=2)
+    ax2.plot(c0x, c0cdf, 'r')
+    ax1.set_xlabel(r'$\hat{c}_0$')
+    ax1.set_ylabel("PDF", color='b')
+    ax2.set_ylabel("CDF", color='r')
+    # plt.savefig("c0.png")
+    plt.title(r'Estimated Distribution of $\hat{c}_0$')
     plt.show()
 
 

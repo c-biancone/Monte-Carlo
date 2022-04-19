@@ -5,7 +5,7 @@ Program to perform operations on data with propagating Monte Carlo error.
 Generates random data with desired statistical properties, finds linear least-squares estimate of the original function.
 Finds distribution of linear fit coefficients.
 """
-__author__: "Chris Biancone, Daniel Chapin, Carissa Hartley, Isaac Kim, Neil Williamson"
+__author__: "Chris Biancone, Daniel Chapin, Carissa Hartley, Isaac Kim, Neil Williamson, Dylan Daccarett"
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -137,8 +137,8 @@ def main():
     plt.show()
 
     # variance of f_hat:
-    # Var(aX + b) = a^2  - this right??
-    varfhat = c1mean ** 2
+    # Var(aX + b) = a^2(Var(X)) - this right??
+    varfhat = (c1mean ** 2) * np.var(xvals)
     print("Variance of estimated function:", varfhat)
 
     # ==================================================================================================================
@@ -163,7 +163,7 @@ def main():
     print("1st degree coefficient:\n\tmean:", c1mean, "\n\tstd dev:", c1std, "\n\tvariance:", c1var)
     print("0th degree coefficient:\n\tmean:", c0mean, "\n\tstd dev:", c0std, "\n\tvariance:", c0var)
     print("correlation coefficient (from before):", correlation)
-    varfhatreal = c1mean ** 2
+    varfhatreal = (c1mean ** 2) * np.var(xreal)
     print("Variance of estimated function:", varfhatreal)
 
     # 90% confidence interval: f_hat +/- z_.05sqrt(Var(f_hat)), Var(f_hat) = c_1^2
@@ -175,9 +175,6 @@ def main():
     plt.fill_between(xreal, freal + confidence, freal - confidence)
     plt.scatter(xreal, yreal, label='Given Data')
     plt.show()
-
-
-
 
 
 # Press the green button in the gutter to run the script.

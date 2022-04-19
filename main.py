@@ -123,6 +123,16 @@ def main():
     plt.title(r'Estimated Distribution of $\hat{c}_0$')
     plt.show()
 
+    # plot original data and estimated curve
+    y = fn2(xvals)
+    plt.figure(4)
+    regression = c1mean * xvals + c0mean
+    plt.plot(xvals, y, 'b', label='Original Function')
+    plt.plot(xvals, regression, 'r', label='Linear Regression')
+    plt.title("Function and Estimate")
+    plt.legend()
+    plt.show()
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

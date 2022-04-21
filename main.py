@@ -65,12 +65,16 @@ def ecdf(a):
 
 def main():
     dat_out = []  # array for coefficients of each data set
+    y_out = []
     origfcn = make_fake_data(fn2)
     for i in np.arange(N):  # iterate over 1000 data sets
         # perform regression using Ordinary Least Squares algorithm
         # degree = 1 for linear regression
-        dat_out.append(np.polyfit(xvals, make_fake_data(fn2), 1))
+        yvals = make_fake_data(fn2)
+        dat_out.append(np.polyfit(xvals, yvals, 1))
+        y_out.append(yvals)
     dat_out = np.array(dat_out)
+    y_out = np.array(y_out)  # array of random generated data for computing variance
     # print(dat_out)
     c1 = dat_out[:, 0]
     c1mean = np.mean(dat_out[:, 0])
@@ -83,6 +87,13 @@ def main():
     covMatrix = np.cov(dat_out[:, 0], dat_out[:, 1])  # [[sig_c1, cov],[cov, sig_c0]]
     correlation = covMatrix[1, 1] / c1std * c0std  # cov(c0, c1) / sig_c1 * sig_c0
     # seems independent of function choice
+
+    # sample variance
+    x1var = np.var(y_out[:, 0])
+    print("Sample variance:", x1var)
+    x2var = np.var(y_out[:, 1])
+    print("Sample variance:", x2var)
+
 
     print("Generated data =================================")
     print("1st degree coefficient:\n\tmean:", c1mean, "\n\tstd dev:", c1std, "\n\tvariance:", c1var)

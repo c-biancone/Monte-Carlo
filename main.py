@@ -81,7 +81,7 @@ def main():
     c0std = np.std(dat_out[:, 1])
     c0var = np.var(dat_out[:, 1])
     covMatrix = np.cov(dat_out[:, 0], dat_out[:, 1])  # [[sig_c1, cov],[cov, sig_c0]]
-    correlation = covMatrix[1, 1] / covMatrix[0, 0] * covMatrix[1, 1]  # cov(c0, c1) / sig_c1 * sig_c0
+    correlation = covMatrix[1, 1] / c1std * c0std  # cov(c0, c1) / sig_c1 * sig_c0
     # seems independent of function choice
 
     print("Generated data =================================")
@@ -92,10 +92,11 @@ def main():
 
     # plot coefficient spread
     plt.figure(1)
-    plt.title("Coefficient Spread, N = "+str(N))
+    plt.title("Coefficient Spread, N = " + str(N))
     plt.xlabel(r'$\hat{c}_1$')
     plt.ylabel(r'$\hat{c}_0$')
     plt.scatter(dat_out[:, 0], dat_out[:, 1])
+    plt.savefig("coefficient_spread")
     plt.show()
 
     # estimated distribution and empirical CDF
@@ -109,8 +110,8 @@ def main():
     ax1.set_xlabel(r'$\hat{c}_1$')
     ax1.set_ylabel("PDF", color='b')
     ax2.set_ylabel("CDF", color='r')
-    # plt.savefig("c1.png")
     plt.title(r'Estimated Distribution of $\hat{c}_1$')
+    plt.savefig("c1hat_dist")
     plt.show()
 
     c0pdf = gaussian(c0, c0mean, c0std)
@@ -123,8 +124,8 @@ def main():
     ax1.set_xlabel(r'$\hat{c}_0$')
     ax1.set_ylabel("PDF", color='b')
     ax2.set_ylabel("CDF", color='r')
-    # plt.savefig("c0.png")
     plt.title(r'Estimated Distribution of $\hat{c}_0$')
+    plt.savefig("c0hat_dist")
     plt.show()
 
     # plot original data and estimated curve
@@ -134,11 +135,12 @@ def main():
     plt.plot(xvals, regression, 'r', label='Linear Regression')
     plt.title("Function and Estimate")
     plt.legend()
+    plt.savefig("estimate_random-data")
     plt.show()
 
     # variance of f_hat:
     # Var(aX + b) = a^2(Var(X)) - this right??
-    varfhat = (c1mean ** 2) * np.var(xvals)
+    varfhat = np.var(c1mean * xvals + c0mean)
     print("Variance of estimated function:", varfhat)
 
     # ==================================================================================================================
@@ -163,17 +165,20 @@ def main():
     print("1st degree coefficient:\n\tmean:", c1mean, "\n\tstd dev:", c1std, "\n\tvariance:", c1var)
     print("0th degree coefficient:\n\tmean:", c0mean, "\n\tstd dev:", c0std, "\n\tvariance:", c0var)
     print("correlation coefficient (from before):", correlation)
-    varfhatreal = (c1mean ** 2) * np.var(xreal)
-    print("Variance of estimated function:", varfhatreal)
+    # varfhatreal = np.var(c1mean * xreal + c0mean)
+    # print("Variance of estimated function:", varfhatreal)
 
     # 90% confidence interval: f_hat +/- z_.05sqrt(Var(f_hat)), Var(f_hat) = c_1^2
     freal = c1mean * np.array(xreal) + c0mean  # needed to convert to numpy array from python list
-    confidence = 1.645*np.sqrt(c1mean**2)
+    confidence = 1.645*np.sqrt(varfhat)  # using variance of f_hat from generated data bc no way to get sample variance\
+    print("CI: f_hat +/-", confidence)
+    # from given data
     plt.figure(5)
     plt.title('Given data and regression with 90% CI')
-    plt.plot(xreal, freal, 'r', label='Linear Regression')
-    plt.fill_between(xreal, freal + confidence, freal - confidence)
-    plt.scatter(xreal, yreal, label='Given Data')
+    plt.plot(xreal, freal, 'r', label='Linear Regression')  # estimated function
+    plt.fill_between(xreal, freal + confidence, freal - confidence, facecolor='red', alpha=0.5)  # confidence interval using previous variance
+    plt.scatter(xreal, yreal, label='Given Data')  # given data points
+    plt.savefig("estimate_given-data")
     plt.show()
 
 
